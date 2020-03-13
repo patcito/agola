@@ -1,0 +1,36 @@
+version: v0
+
+runs:
+  - name: publish ruby gem example
+    tasks:
+      - name: Publish to GPR
+        environment:
+          GEM_HOST_API_KEY:
+            from_variable: gpr_auth_token
+          OWNER:
+            from_variable: owner
+        runtime:
+          type: pod
+          arch: amd64
+          containers:
+            - image: ruby:2.6-stretch
+        steps:
+          - clone:
+          - run:
+              name: Build and Publish
+              command: ./ci/publish-gpr.sh
+
+      - name: Publish to RubyGems
+        environment:
+          GEM_HOST_API_KEY:
+            from_variable: rubygems_auth_token
+        runtime:
+          type: pod
+          arch: amd64
+          containers:
+            - image: ruby:2.6-stretch
+        steps:
+          - clone:
+          - run:
+              name: Build and Publish
+              command: ./ci/publish-rubygems.sh
