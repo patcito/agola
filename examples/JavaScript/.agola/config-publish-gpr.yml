@@ -1,0 +1,19 @@
+version: v0
+
+runs:
+  - name: publish gpr example
+    tasks:
+      - name: Build and Publish
+        environment:
+          NODE_AUTH_TOKEN:
+            from_variable: github_token
+        runtime:
+          type: pod
+          arch: amd64
+          containers:
+            - image: node
+        steps:
+          - clone:
+          - run: npm ci
+          - run: npm config set @<your github username>:https://npm.pkg.github.com/
+          - run: npm publish
