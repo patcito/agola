@@ -1,0 +1,39 @@
+version: v0
+
+runs:
+  - name: php example
+    tasks:
+      - name: install dependencies
+        runtime:
+          type: pod
+          arch: amd64
+          containers:
+            - image: composer
+        steps:
+          - clone:
+          - run:
+              name: Validate
+              command: composer validate
+          - run:
+              name: Install Dependencies
+              command: composer install --prefer-dist --no-progress --no-suggest
+          - save_to_workspace:
+              contents:
+                - source_dir: .
+                  dest_dir: /app
+                  paths:
+                    - **
+      - name: Test
+        runtime:
+          type: pod
+          arch: amd64
+          containers:
+            - image: php:7
+        steps:
+          - restore_workspace:
+              dest_dir: /app
+          - run:
+              working_dir: /app
+              command: vendor/bin/phpunit --configuration config.xml
+        depends:
+          - install dependencies
