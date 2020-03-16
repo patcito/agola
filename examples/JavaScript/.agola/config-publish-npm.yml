@@ -1,0 +1,19 @@
+version: v0
+
+runs:
+  - name: publish npm example
+    tasks:
+      - name: Build and Publish
+        environment:
+          NODE_AUTH_TOKEN:
+            from_variable: npm_token
+        runtime:
+          type: pod
+          arch: amd64
+          containers:
+            - image: node
+        steps:
+          - clone:
+          - run: npm ci
+          - run: echo 'registry=https://registry.npmjs.org/' > .npmrc
+          - run: npm publish
