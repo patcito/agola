@@ -1,0 +1,25 @@
+version: v0
+
+runs:
+  - name: c example
+    tasks:
+      - name: Configure and Check
+        runtime:
+          type: pod
+          arch: amd64
+          containers:
+            - image: gcc
+        steps:
+          - clone:
+          - run:
+              name: configure
+              command: ./configure
+          - run:
+              name: make
+              commad: make
+          - run:
+              name: make check
+              commad: make check
+          - run:
+              name: make distcheck
+              commad: make distcheck
