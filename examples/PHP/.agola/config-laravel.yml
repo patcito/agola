@@ -1,0 +1,36 @@
+version: v0
+
+runs:
+  - name: php example
+    tasks:
+      - name: Test
+        environment:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+        runtime:
+          type: pod
+          arch: amd64
+          containers:
+            - image: php:7
+        steps:
+          - run:
+              name: Copy .env
+              command: php -r "file_exists('.env') || copy('.env.example', '.env');"
+          - run:
+              name: Install Composer
+              command: curl -ksS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+          - run:
+              name: Install Dependencies
+              command: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+          - run:
+              name: Generate key
+              command: php artisan key:generate
+          - run:
+              name: Directory Permissions
+              command: chmod -R 777 storage bootstrap/cache
+          - run:
+              name: Create Database
+              command: mkdir -p database && touch database/database.sqlite
+          - run:
+              name: Execute tests (Unit and Feature tests) via PHPUnit
+              command: vendor/bin/phpunit
