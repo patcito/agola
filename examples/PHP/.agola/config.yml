@@ -22,7 +22,7 @@ runs:
                 - source_dir: .
                   dest_dir: /app
                   paths:
-                    - **
+                    - '**'
       - name: Test
         runtime:
           type: pod
