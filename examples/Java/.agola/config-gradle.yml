@@ -1,0 +1,20 @@
+version: v0
+
+runs:
+  - name: gradle example
+    tasks:
+      - name: Build
+        runtime:
+          type: pod
+          arch: amd64
+          containers:
+            - image: gradle:6.2-jdk8
+        steps:
+          - clone:
+          - run:
+            name: Grant execute permission for gradlew
+            command: chmod +x gradlew
+          - run:
+            name: Build with Gradle
+            command: ./gradlew build
+
