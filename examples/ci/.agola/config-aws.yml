@@ -1,0 +1,36 @@
+version: v0
+
+runs:
+  - name: Push to AWS ECR
+    tasks:
+      - name: clone
+        runtime:
+          containers:
+            - image: alpine
+        steps:
+          - clone:
+          - save_to_workspace:
+              contents:
+                - source_dir: .
+                  dest_dir: /
+                  paths:
+                    - '**'
+      - name: build and push to aws ecr
+        environment:
+          CREDENTIAL:
+            from_variable: aws_credential
+          REPO_URL: <account_id>.dkr.ecr.us-east-1.amazonaws.com
+        runtime:
+          containers:
+            - image: gcr.io/kaniko-project/executor:debug
+        shell: /busybox/sh
+        working_dir: /workspace
+        steps:
+          - restore_workspace:
+              dest_dir: .
+          - run: /busybox/mkdir -p /root/.aws
+          - run: /busybox/echo $CREDENTIALS | base64 -d > /root/.aws/credentials
+          - run: /busybox/echo "{\"credHelpers\":{\"$REPO_URL\":\"ecr-login\"}}" > /kaniko/.docker/config.json
+          - run: /kaniko/executor --dockerfile Dockerfile --destination $REPO_URL/your_image:tag
+        depends:
+          - clone
