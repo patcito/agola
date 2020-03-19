@@ -1,0 +1,29 @@
+version: v0
+
+runs:
+  - name: Build docker image
+    tasks:
+      - name: clone
+        runtime:
+          containers:
+            - image: alpine
+        steps:
+          - clone:
+          - save_to_workspace:
+              contents:
+                - source_dir: .
+                  dest_dir: /
+                  paths:
+                    - '**'
+      - name: build docker image
+        runtime:
+          containers:
+            - image: gcr.io/kaniko-project/executor:debug
+        shell: /busybox/sh
+        working_dir: /workspace
+        steps:
+          - restore_workspace:
+              dest_dir: .
+          - run: /kaniko/executor --no-push
+        depends:
+          - clone
