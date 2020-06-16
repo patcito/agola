@@ -69,11 +69,16 @@ func (c *Client) ParseWebhook(r *http.Request, secret string) (*types.WebhookDat
 		}
 	}
 
+	priority, _ := strconv.ParseInt(r.URL.Query().Get("priority"), 10, 64)
 	switch r.Header.Get(hookEvent) {
 	case hookPush:
-		return parsePushHook(data)
+		wd, err := parsePushHook(data)
+		wd.Priority = priority
+		return wd, err
 	case hookPullRequest:
-		return parsePullRequestHook(data)
+		wd, err := parsePullRequestHook(data)
+		wd.Priority = priority
+		return wd, err
 	default:
 		return nil, errors.Errorf("unknown webhook event type: %q", r.Header.Get(hookEvent))
 	}
