@@ -325,6 +325,7 @@ func (c *Client) CreateRepoWebhook(repopath, url, secret string) error {
 		return err
 	}
 
+	url = url + "&priority="
 	opts := gitea.CreateHookOption{
 		Type: "gitea",
 		Config: map[string]string{

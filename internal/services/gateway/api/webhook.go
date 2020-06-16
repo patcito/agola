@@ -139,6 +139,7 @@ func (h *webhooksHandler) handleWebhook(r *http.Request) error {
 		TagLink:         webhookData.TagLink,
 		PullRequestLink: webhookData.PullRequestLink,
 		CompareLink:     webhookData.CompareLink,
+		Priority:        webhookData.Priority,
 	}
 	if err := h.ah.CreateRuns(ctx, req); err != nil {
 		return util.NewErrInternal(errors.Errorf("failed to create run: %w", err))

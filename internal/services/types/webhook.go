@@ -45,7 +45,8 @@ type WebhookData struct {
 	PullRequestLink string `json:"link,omitempty"` // Link to pull request
 	PRFromSameRepo  bool   `json:"pr_from_same_repo,omitempty"`
 
-	Repo WebhookDataRepo `json:"repo,omitempty"`
+	Repo     WebhookDataRepo `json:"repo,omitempty"`
+	Priority int64           `json:"-"`
 }
 
 type WebhookDataRepo struct {

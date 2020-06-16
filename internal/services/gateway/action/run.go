@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"path"
 	"regexp"
+	"strconv"
 
 	"agola.io/agola/internal/config"
 	gitsource "agola.io/agola/internal/gitsources"
@@ -66,6 +67,7 @@ const (
 	AnnotationTagLink         = "tag_link"
 	AnnotationPullRequestID   = "pull_request_id"
 	AnnotationPullRequestLink = "pull_request_link"
+	AnnotationPriority        = "priority"
 )
 
 var (
@@ -357,6 +359,7 @@ type CreateRunRequest struct {
 	// commit compare link
 	CompareLink string
 
+	Priority int64
 	// fields only used with user direct runs
 	UserRunRepoUUID string
 	Variables       map[string]string
@@ -455,6 +458,7 @@ func (h *ActionHandler) CreateRuns(ctx context.Context, req *CreateRunRequest) e
 		AnnotationMessage:            req.Message,
 		AnnotationCommitLink:         req.CommitLink,
 		AnnotationCompareLink:        req.CompareLink,
+		AnnotationPriority:           strconv.Itoa(int(req.Priority)),
 	}
 
 	if req.RunType == itypes.RunTypeProject {
