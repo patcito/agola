@@ -127,6 +127,8 @@ type Run struct {
 
 	Archived bool `json:"archived,omitempty"`
 
+	Priority int64 `json:"priority,omitempty"`
+
 	// internal values not saved
 	Revision int64 `json:"-"`
 }

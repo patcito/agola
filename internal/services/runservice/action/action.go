@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"strconv"
 	"time"
 
 	"agola.io/agola/internal/datamanager"
@@ -26,6 +27,7 @@ import (
 	"agola.io/agola/internal/objectstorage"
 	"agola.io/agola/internal/runconfig"
 	"agola.io/agola/internal/sequence"
+	"agola.io/agola/internal/services/gateway/action"
 	"agola.io/agola/internal/services/runservice/common"
 	"agola.io/agola/internal/services/runservice/readdb"
 	"agola.io/agola/internal/services/runservice/store"
@@ -288,6 +290,11 @@ func recreateRun(uuid util.UUIDGenerator, run *types.Run, rc *types.RunConfig, n
 	run.EnqueueTime = nil
 	run.StartTime = nil
 	run.EndTime = nil
+	if priorityStr, ok := rc.Annotations[action.AnnotationPriority]; ok {
+		if priority, err := strconv.Atoi(priorityStr); err == nil {
+			run.Priority = int64(priority)
+		}
+	}
 
 	// TODO(sgotti) handle reset tasks
 	// currently we only restart a run resetting al failed tasks
@@ -472,6 +479,11 @@ func genRun(rc *types.RunConfig) *types.Run {
 		Phase:       types.RunPhaseQueued,
 		Result:      types.RunResultUnknown,
 		Tasks:       make(map[string]*types.RunTask),
+	}
+	if priorityStr, ok := rc.Annotations[action.AnnotationPriority]; ok {
+		if priority, err := strconv.Atoi(priorityStr); err == nil {
+			r.Priority = int64(priority)
+		}
 	}
 
 	if len(rc.SetupErrors) > 0 {
