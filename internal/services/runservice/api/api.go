@@ -583,13 +583,14 @@ func (h *RunsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	start := query.Get("start")
+	sortByPriority := query.Get("priority") != ""
 
 	var runs []*types.Run
 	var cgt *types.ChangeGroupsUpdateToken
 
 	err := h.readDB.Do(ctx, func(tx *db.Tx) error {
 		var err error
-		runs, err = h.readDB.GetRuns(tx, groups, lastRun, phaseFilter, resultFilter, start, limit, sortOrder)
+		runs, err = h.readDB.GetRuns(tx, groups, lastRun, phaseFilter, resultFilter, start, limit, sortOrder, sortByPriority)
 		if err != nil {
 			h.log.Errorf("err: %+v", err)
 			return err

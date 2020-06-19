@@ -1138,10 +1138,10 @@ func (r *ReadDB) GetChangeGroupsUpdateTokens(tx *db.Tx, groups []string) (*types
 }
 
 func (r *ReadDB) GetActiveRuns(tx *db.Tx, groups []string, lastRun bool, phaseFilter []types.RunPhase, resultFilter []types.RunResult, startRunID string, limit int, sortOrder types.SortOrder) ([]*RunData, error) {
-	return r.getRunsFilteredActive(tx, groups, lastRun, phaseFilter, resultFilter, startRunID, limit, sortOrder)
+	return r.getRunsFilteredActive(tx, groups, lastRun, phaseFilter, resultFilter, startRunID, limit, sortOrder, false)
 }
 
-func (r *ReadDB) GetRuns(tx *db.Tx, groups []string, lastRun bool, phaseFilter []types.RunPhase, resultFilter []types.RunResult, startRunID string, limit int, sortOrder types.SortOrder) ([]*types.Run, error) {
+func (r *ReadDB) GetRuns(tx *db.Tx, groups []string, lastRun bool, phaseFilter []types.RunPhase, resultFilter []types.RunResult, startRunID string, limit int, sortOrder types.SortOrder, sortByPriority bool) ([]*types.Run, error) {
 	useObjectStorage := false
 	for _, phase := range phaseFilter {
 		if phase == types.RunPhaseFinished || phase == types.RunPhaseCancelled {
@@ -1152,7 +1152,7 @@ func (r *ReadDB) GetRuns(tx *db.Tx, groups []string, lastRun bool, phaseFilter [
 		useObjectStorage = true
 	}
 
-	runDataRDB, err := r.getRunsFilteredActive(tx, groups, lastRun, phaseFilter, resultFilter, startRunID, limit, sortOrder)
+	runDataRDB, err := r.getRunsFilteredActive(tx, groups, lastRun, phaseFilter, resultFilter, startRunID, limit, sortOrder, sortByPriority)
 	if err != nil {
 		return nil, err
 	}
@@ -1165,7 +1165,7 @@ func (r *ReadDB) GetRuns(tx *db.Tx, groups []string, lastRun bool, phaseFilter [
 
 	if useObjectStorage {
 		// skip if the phase requested is not finished
-		runDataOST, err := r.GetRunsFilteredOST(tx, groups, lastRun, phaseFilter, resultFilter, startRunID, limit, sortOrder)
+		runDataOST, err := r.GetRunsFilteredOST(tx, groups, lastRun, phaseFilter, resultFilter, startRunID, limit, sortOrder, sortByPriority)
 		if err != nil {
 			return nil, err
 		}
@@ -1231,7 +1231,7 @@ func (r *ReadDB) GetRuns(tx *db.Tx, groups []string, lastRun bool, phaseFilter [
 	return aruns, nil
 }
 
-func (r *ReadDB) getRunsFilteredQuery(phaseFilter []types.RunPhase, resultFilter []types.RunResult, groups []string, lastRun bool, startRunID string, limit int, sortOrder types.SortOrder, objectstorage bool) sq.SelectBuilder {
+func (r *ReadDB) getRunsFilteredQuery(phaseFilter []types.RunPhase, resultFilter []types.RunResult, groups []string, lastRun bool, startRunID string, limit int, sortOrder types.SortOrder, objectstorage, sortByPriority bool) sq.SelectBuilder {
 	runt := "run"
 	rundatat := "rundata"
 	fields := []string{"run.id", "run.grouppath", "run.phase", "rundata.data"}
@@ -1247,9 +1247,17 @@ func (r *ReadDB) getRunsFilteredQuery(phaseFilter []types.RunPhase, resultFilter
 	s := sb.Select(fields...).From(runt + " as run")
 	switch sortOrder {
 	case types.SortOrderAsc:
-		s = s.OrderBy("run.id asc")
+		if sortByPriority {
+			s = s.OrderBy("run.priority asc")
+		} else {
+			s = s.OrderBy("run.id asc")
+		}
 	case types.SortOrderDesc:
-		s = s.OrderBy("run.id desc")
+		if sortByPriority {
+			s = s.OrderBy("run.priority desc")
+		} else {
+			s = s.OrderBy("run.id desc")
+		}
 	}
 	if len(phaseFilter) > 0 {
 		s = s.Where(sq.Eq{"phase": phaseFilter})
@@ -1298,8 +1306,8 @@ func (r *ReadDB) getRunsFilteredQuery(phaseFilter []types.RunPhase, resultFilter
 	return s
 }
 
-func (r *ReadDB) getRunsFilteredActive(tx *db.Tx, groups []string, lastRun bool, phaseFilter []types.RunPhase, resultFilter []types.RunResult, startRunID string, limit int, sortOrder types.SortOrder) ([]*RunData, error) {
-	s := r.getRunsFilteredQuery(phaseFilter, resultFilter, groups, lastRun, startRunID, limit, sortOrder, false)
+func (r *ReadDB) getRunsFilteredActive(tx *db.Tx, groups []string, lastRun bool, phaseFilter []types.RunPhase, resultFilter []types.RunResult, startRunID string, limit int, sortOrder types.SortOrder, sortByPriority bool) ([]*RunData, error) {
+	s := r.getRunsFilteredQuery(phaseFilter, resultFilter, groups, lastRun, startRunID, limit, sortOrder, false, sortByPriority)
 
 	q, args, err := s.ToSql()
 	r.log.Debugf("q: %s, args: %s", q, util.Dump(args))
@@ -1310,8 +1318,8 @@ func (r *ReadDB) getRunsFilteredActive(tx *db.Tx, groups []string, lastRun bool,
 	return fetchRuns(tx, q, args...)
 }
 
-func (r *ReadDB) GetRunsFilteredOST(tx *db.Tx, groups []string, lastRun bool, phaseFilter []types.RunPhase, resultFilter []types.RunResult, startRunID string, limit int, sortOrder types.SortOrder) ([]*RunData, error) {
-	s := r.getRunsFilteredQuery(phaseFilter, resultFilter, groups, lastRun, startRunID, limit, sortOrder, true)
+func (r *ReadDB) GetRunsFilteredOST(tx *db.Tx, groups []string, lastRun bool, phaseFilter []types.RunPhase, resultFilter []types.RunResult, startRunID string, limit int, sortOrder types.SortOrder, sortByPriority bool) ([]*RunData, error) {
+	s := r.getRunsFilteredQuery(phaseFilter, resultFilter, groups, lastRun, startRunID, limit, sortOrder, true, sortByPriority)
 
 	q, args, err := s.ToSql()
 	r.log.Debugf("q: %s, args: %s", q, util.Dump(args))
