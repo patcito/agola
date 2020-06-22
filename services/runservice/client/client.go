@@ -202,7 +202,7 @@ func (c *Client) GetRuns(ctx context.Context, phaseFilter, resultFilter, groups 
 
 func (c *Client) GetQueuedRuns(ctx context.Context, start string, limit int, changeGroups []string) (*rsapitypes.GetRunsResponse, *http.Response, error) {
 	priority := os.Getenv("AGOLA_USE_RUN_PRIORITY")
-	return c.GetRuns(ctx, []string{"queued"}, nil, []string{}, false, changeGroups, start, limit, true, priority)
+	return c.GetRuns(ctx, []string{"queued"}, nil, []string{}, false, changeGroups, start, limit, true, priority != "")
 }
 
 func (c *Client) GetRunningRuns(ctx context.Context, start string, limit int, changeGroups []string) (*rsapitypes.GetRunsResponse, *http.Response, error) {
