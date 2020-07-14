@@ -39,7 +39,7 @@ import (
 const (
 	defaultSSHPort = "22"
 
-	agolaDefaultConfigDir          = ".agola"
+	agolaDefaultConfigDir          = ".gitchai"
 	agolaDefaultStarlarkConfigFile = "config.star"
 	agolaDefaultJsonnetConfigFile  = "config.jsonnet"
 	agolaDefaultJsonConfigFile     = "config.json"
