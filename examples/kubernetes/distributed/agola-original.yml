@@ -12,7 +12,7 @@ spec:
   selector:
     app: agola
     component: gateway-others
-  type: LoadBalancer
+  type: NodePort
 
 ---
 
@@ -67,10 +67,10 @@ data:
     gateway:
       # The api url that clients will call
       # Change this to the exposed "agola" service IP or dns name
-      apiExposedURL: "http://staging.agola.gitchai.com:30002"
+      apiExposedURL: "http://192.168.39.188:30002"
       # The web interface url that clients will use
       # Change this to the exposed "agola" service IP or dns name
-      webExposedURL: "http://staging.agola.gitchai.com:30002"
+      webExposedURL: "http://192.168.39.188:30002"
       runserviceURL: "http://agola-runservice:4000"
       configstoreURL: "http://agola-configstore:4002"
       gitserverURL: "http://agola-gitserver:4003"
@@ -85,13 +85,13 @@ data:
         # paths to the private and public keys in pem encoding when using rsa signing
         #privateKeyPath: /path/to/privatekey.pem
         #publicKeyPath: /path/to/public.pem
-      adminToken: "adminToken"
+      adminToken: "admintoken"
 
     scheduler:
       runserviceURL: "http://agola-runservice:4000"
 
     notification:
-      webExposedURL: "http://staging.agola.gitchai.com:30002"
+      webExposedURL: "http://192.168.39.188:30002"
       runserviceURL: "http://agola-runservice:4000"
       configstoreURL: "http://agola-configstore:4002"
       etcd:
@@ -102,8 +102,12 @@ data:
       etcd:
         endpoints: "http://etcd:2379"
       objectStorage:
-        type: posix
-        path: /mnt/agola/objectstorage/configstore/ost
+        type: s3
+        # example with minio
+        endpoint: "http://minio-service:9000"
+        bucket: configstore
+        accessKey: minio
+        secretAccessKey: minio123
       web:
         listenAddress: ":4002"
 
@@ -113,8 +117,12 @@ data:
       etcd:
         endpoints: "http://etcd:2379"
       objectStorage:
-        type: posix
-        path: /mnt/agola/objectstorage/runservice/ost
+        type: s3
+        # example with minio
+        endpoint: "http://minio-service:9000"
+        bucket: runservice
+        accessKey: minio
+        secretAccessKey: minio123
       web:
         listenAddress: ":4000"
 
@@ -155,7 +163,7 @@ spec:
     spec:
       containers:
       - name: agola
-        image: gnouc/agola:latest
+        image: agola
         command:
           - /bin/agola
           - serve
@@ -197,7 +205,7 @@ spec:
     spec:
       containers:
       - name: agola
-        image: gnouc/agola:latest
+        image: agola
         command:
           - /bin/agola
           - serve
@@ -240,7 +248,7 @@ spec:
     spec:
       containers:
       - name: agola
-        image: gnouc/agola:latest
+        image: agola
         command:
           - /bin/agola
           - serve
@@ -283,7 +291,7 @@ spec:
     spec:
       containers:
       - name: agola
-        image: gnouc/agola:latest
+        image: agola
         command:
           - /bin/agola
           - serve
@@ -331,7 +339,7 @@ spec:
     spec:
       containers:
       - name: agola
-        image: gnouc/agola:latest
+        image: agola
         command:
           - /bin/agola
           - serve
